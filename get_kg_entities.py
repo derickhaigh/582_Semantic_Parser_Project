@@ -8,7 +8,8 @@ import numpy as np
 import datetime
 from nltk import ngrams
 
-LOW_CHAR = ["a","aboard",
+LOW_CHAR = ["a",
+"aboard",
 "about",
 "above",
 "across",
@@ -96,7 +97,7 @@ service_url = 'https://kgsearch.googleapis.com/v1/entities:search'
 
 def load_data(sql_path):
     sql_data = []
-    print "Loading data from %s"%sql_path
+    print(f"Loading data from {sql_path}")
     with open(sql_path) as inf:
         for idx, line in enumerate(inf):
             sql = json.loads(line.strip())
@@ -125,7 +126,7 @@ def query_kg(query):
                 ent_type = [e.lower() for e in element['result']['@type']]
                 #desc = element['description']
             except:
-                print "can not get ent_type!"
+                print("can not get ent_type!")
                 ent_type = []
                 #desc = ""
 
@@ -190,19 +191,19 @@ for sql in sql_data:
     sql["kg_entities"] = ents_kg
     if len(ents_kg) != 0:
         try:
-            print "sentence is: ", sql["question"]
-            print "kg_entities is: ", sql["kg_entities"]
+            print(f"sentence is: {sql['question']}")
+            print(f"kg_entities is: {sql['kg_entities']}")
         except:
             pass
     sql_data_kg.append(sql)
     count += 1
 
-print "\nloaded data exmple count: ", count
+print(f"\n loaded data example count: {count}")
 
 out_dir = sql_path + ".kg"
 with open(out_dir,'w') as wf:
     for d in sql_data_kg:
         wf.write(json.dumps(d) + "\n")
 
-print "done!!!"
+print("Done!!!")
 

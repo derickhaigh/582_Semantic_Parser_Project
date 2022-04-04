@@ -446,7 +446,7 @@ def load_and_process_data(file_path, table_path, out_path):
         for line in f:
             table = json.loads(line.strip())
             tables[table[Keys.TABLE_ID]] = table
-    print len(data)
+    print(len(data))
     with open(out_path, 'w') as f:
         for idx, entry in enumerate(data):
             # change from old keys to new keys
@@ -484,7 +484,7 @@ def load_and_process_data(file_path, table_path, out_path):
             entry[Keys.QUESTION_TYPE_ORG_KGCOL] = res
             del entry[Keys.META]
             if (idx + 1) % 100 == 0:
-                print idx + 1
+                print(str(idx + 1))
             entry = group_words_col(entry, tables)
             f.write(json.dumps(entry) + "\n")
 

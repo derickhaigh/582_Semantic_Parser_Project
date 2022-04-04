@@ -16,7 +16,7 @@ class WordEmbedding(nn.Module):
         self.SQL_TOK = SQL_TOK
 
         if trainable:
-            print "Using trainable embedding"
+            print("Using trainable embedding")
             self.w2i, word_emb_val, _ = word_emb
             # tranable when using pretrained model, init embedding weights using prev embedding
             self.embedding = nn.Embedding(len(self.w2i), N_word)
@@ -24,7 +24,7 @@ class WordEmbedding(nn.Module):
         else:
             # else use word2vec or glove
             _, _, self.word_emb = word_emb
-            print "Using fixed embedding for words but trainable embedding for types"
+            print("Using fixed embedding for words but trainable embedding for types")
 
 
     def gen_xc_type_batch(self, xc_type, is_col=False, is_list=False):

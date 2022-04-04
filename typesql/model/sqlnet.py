@@ -295,16 +295,16 @@ class SQLNet(nn.Module):
 
     def check_acc(self, vis_info, pred_queries, gt_queries, pred_entry, error_print=False):
         def pretty_print(vis_data, pred_query, gt_query):
-            print "\n----------detailed error prints-----------"
+            print("\n----------detailed error prints-----------")
             try:
-                print 'question: ', vis_data[0]
-                print 'question_tok: ', vis_data[3]
-                print 'headers: (%s)'%(' || '.join(vis_data[1]))
-                print 'query:', vis_data[2]
-                print "target query: ", gt_query
-                print "pred query: ", pred_query
+                print(f'question: {vis_data[0]}')
+                print(f'question_tok: {vis_data[3]}')
+                print(f"headers: ({' || '.join(vis_data[1])})")
+                print(f'query: {vis_data[2]}')
+                print(f"target query: {gt_query}")
+                print(f"pred query: {pred_query}")
             except:
-                print "\n------skipping print: decoding problem ----------------------"
+                print("\n------skipping print: decoding problem ----------------------")
 
         def gen_cond_str(conds, header):
             if len(conds) == 0:
@@ -312,7 +312,8 @@ class SQLNet(nn.Module):
             cond_str = []
             for cond in conds:
                 cond_str.append(header[cond[0]] + ' ' +
-                    self.COND_OPS[cond[1]] + ' ' + unicode(cond[2]).lower())
+                    self.COND_OPS[cond[1]] + ' ' + str(cond[2]).lower())
+                    #self.COND_OPS[cond[1]] + ' ' + unicode(cond[2]).lower())
             return 'WHERE ' + ' AND '.join(cond_str)
 
         pred_agg, pred_sel, pred_cond = pred_entry
@@ -363,11 +364,15 @@ class SQLNet(nn.Module):
                     if not flag:
                         break
                     gt_idx = tuple(
-                            x[0] for x in cond_gt).index(cond_pred[idx][0])
-                    if flag and unicode(cond_gt[gt_idx][2]).lower() != \
-                            unicode(cond_pred[idx][2]).lower():
+                          x[0] for x in cond_gt).index(cond_pred[idx][0])
+                    if flag and str(cond_gt[gt_idx][2]).lower() != \
+                            str(cond_pred[idx][2]).lower():
                         flag = False
                         cond_val_err += 1
+                    #if flag and unicode(cond_gt[gt_idx][2]).lower() != \
+                    #        unicode(cond_pred[idx][2]).lower():
+                    #    flag = False
+                    #    cond_val_err += 1
 
                 if not flag:
                     cond_err += 1
