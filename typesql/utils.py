@@ -2,7 +2,7 @@ import re
 import io
 import json
 import numpy as np
-from lib.dbengine import DBEngine
+from typesql.lib.dbengine import DBEngine
 
 def load_data(sql_paths, table_paths, use_small=False):
     if not isinstance(sql_paths, list):
