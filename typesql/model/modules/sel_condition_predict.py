@@ -13,15 +13,15 @@ class SelCondPredictor(nn.Module):
         self.gpu = gpu
 
         if db_content == 0:
-            in_size = N_word+N_word/2
+            in_size = N_word+N_word//2
         else:
             in_size = N_word+N_word
-        self.selcond_lstm = nn.LSTM(input_size=in_size, hidden_size=N_h/2,
+        self.selcond_lstm = nn.LSTM(input_size=in_size, hidden_size=N_h//2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         self.ty_num_out = nn.Linear(N_h, N_h)
         self.cond_num_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 5))
-        self.selcond_name_enc = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.selcond_name_enc = nn.LSTM(input_size=N_word, hidden_size=N_h//2,
                 num_layers=N_depth, batch_first=True,
                 dropout=0.3, bidirectional=True)
         self.num_type_att = nn.Linear(N_h, N_h)
@@ -38,7 +38,7 @@ class SelCondPredictor(nn.Module):
         self.col_att = nn.Linear(N_h, N_h)
         self.cond_col_out = nn.Sequential(nn.ReLU(), nn.Linear(N_h, 1))
 
-        self.softmax = nn.Softmax() #dim=1
+        self.softmax = nn.Softmax(dim=1) #dim=1
 
 
     def forward(self, x_emb_var, x_len, col_inp_var, col_len, x_type_emb_var, gt_sel):

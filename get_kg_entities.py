@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 import sys
-import urllib
+import urllib.request
+import urllib.parse
+import urllib.error
 import torch
 from typesql.utils import *
 import numpy as np
@@ -117,8 +119,8 @@ def query_kg(query):
     }
     if query not in VISITED:
         try:
-            url = service_url + '?' + urllib.urlencode(params)
-            response = json.loads(urllib.urlopen(url).read())
+            url = service_url + '?' + urllib.parse.urlencode(params)
+            response = json.loads(urllib.request.urlopen(url).read())
             element = response['itemListElement'][0]
             res = element['result']['name'].lower()
             #ent_type = [e.lower() for e in element['result']['@type']]

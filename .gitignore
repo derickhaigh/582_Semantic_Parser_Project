@@ -4,3 +4,4 @@ glove
 para-nmt-50m
 ara-nmt-50m
 saved_model_kg
+*.pyc

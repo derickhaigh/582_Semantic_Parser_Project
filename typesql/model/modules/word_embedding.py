@@ -33,9 +33,11 @@ class WordEmbedding(nn.Module):
         val_len = np.zeros(B, dtype=np.int64)
         for i, one_q in enumerate(xc_type):
             if is_list:
-                q_val = map(lambda x:self.w2i.get(" ".join(sorted(x)), 0), one_q)
+                q_val = [self.w2i.get(" ".join(sorted(x)), 0) for x in one_q]
+                #q_val = map(lambda x:self.w2i.get(" ".join(sorted(x)), 0), one_q)
             else:
-                q_val = map(lambda x:self.w2i.get(x, 0), one_q)
+                q_val = [self.w2i.get(x, 0) for x in one_q]
+                #q_val = map(lambda x:self.w2i.get(x, 0), one_q)
             if is_col:
                 val_embs.append(q_val)  #<BEG> and <END>
                 val_len[i] = len(q_val)
@@ -74,9 +76,11 @@ class WordEmbedding(nn.Module):
                 one_q = one_qn
             if self.trainable:
                 # q_val is only the indexes of words
-                q_val = map(lambda x:self.w2i.get(x, 0), one_q)
+                q_val = [self.w2i.get(x, 0) for x in one_q]
+                #q_val = map(lambda x:self.w2i.get(x, 0), one_q)
             elif not is_list:
-                q_val = map(lambda x:self.word_emb.get(x, np.zeros(self.N_word, dtype=np.float32)), one_q)
+                q_val = [self.word_emb.get(x, np.zeros(self.N_word, dtype=np.float32)) for x in one_q]
+                #q_val = map(lambda x:self.word_emb.get(x, np.zeros(self.N_word, dtype=np.float32)), one_q)
             else:
                 q_val = []
                 for ws in one_q:
@@ -143,9 +147,11 @@ class WordEmbedding(nn.Module):
         agg_ops = ['none', 'maximum', 'minimum', 'count', 'total', 'average']
         for b in range(B):
             if self.trainable:
-                ct_val = map(lambda x:self.w2i.get(x, 0), agg_ops)
+                ct_val = [self.w2i.get(x, 0) for x in agg_ops]
+                #ct_val = map(lambda x:self.w2i.get(x, 0), agg_ops)
             else:
-                ct_val = map(lambda x:self.word_emb.get(x, np.zeros(self.N_word, dtype=np.float32)), agg_ops)
+                ct_val = [self.word_emb.get(x, np.zeros(self.N_word, dtype=np.float32)) for x in agg_ops]
+                #ct_val = map(lambda x:self.word_emb.get(x, np.zeros(self.N_word, dtype=np.float32)), agg_ops)
             ret.append(ct_val)
 
         agg_emb_array = np.zeros((B, 6, self.N_word), dtype=np.float32)

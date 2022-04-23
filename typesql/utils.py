@@ -27,10 +27,10 @@ def load_data(sql_paths, table_paths, use_small=False):
         with open(TABLE_PATH) as inf:
             for line in inf:
                 tab = json.loads(line.strip())
-                table_data[tab[u'id']] = tab
+                table_data[tab['id']] = tab
 
     for sql in sql_data:
-        assert sql[u'table_id'] in table_data
+        assert sql['table_id'] in table_data
 
     return sql_data, table_data
 
@@ -136,7 +136,7 @@ def epoch_train(model, optimizer, batch_size, sql_data, table_data, pred_entry, 
         score = model.forward(q_seq, col_seq, col_num, q_type, col_type, pred_entry,
                 gt_where=gt_where_seq, gt_cond=gt_cond_seq, gt_sel=gt_sel_seq)
         loss = model.loss(score, ans_seq, pred_entry, gt_where_seq)
-        cum_loss += loss.data.cpu().numpy()[0]*(ed - st)
+        cum_loss += loss.data.cpu().numpy().item()*(ed - st) 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -217,7 +217,7 @@ def load_para_wemb(file_name):
     for (n,line) in enumerate(lines):
         info = line.strip().split(' ')
         if info[0].lower() not in ret:
-            ret[info[0]] = np.array(map(lambda x:float(x), info[1:]))
+            ret[info[0]] = np.array([float(x) for x in info[1:]])
 
     return ret
 
@@ -241,15 +241,15 @@ def load_concat_wemb(fn1, fn2):
 
 def load_word_emb(file_name, load_used=False, use_small=False):
     if not load_used:
-        print ('Loading word embedding from %s'%file_name)
+        print('Loading word embedding from %s'%file_name)
         ret = {}
-        with open(file_name) as inf:
+        with open(file_name, encoding="utf8") as inf:
             for idx, line in enumerate(inf):
                 if (use_small and idx >= 5000):
                     break
                 info = line.strip().split(' ')
                 if info[0].lower() not in ret:
-                    ret[info[0]] = np.array(map(lambda x:float(x), info[1:]))
+                    ret[info[0]] = np.array([float(x) for x in info[1:]])
         return ret
     else:
         print ('Load used word embedding')
@@ -288,7 +288,7 @@ def load_word_and_type_emb(fn1, fn2, sql_data, table_data, db_content, is_list=F
                     embs.append(sum(emb_list) / float(ws_len))
 
         if use_htype:
-            for tab in table_data.values():
+            for tab in list(table_data.values()):
                 for col in tab['header_type_kg']:
                     cts = " ".join(sorted(col))
                     if cts not in word_to_idx:
@@ -316,7 +316,7 @@ def load_word_and_type_emb(fn1, fn2, sql_data, table_data, db_content, is_list=F
                     embs.append(word_emb[tok][:N_word])
 
         if use_htype:
-            for tab in table_data.values():
+            for tab in list(table_data.values()):
                 for tok in tab['header_type_kg']:
                     if tok not in word_to_idx:
                         word_to_idx[tok] = word_num

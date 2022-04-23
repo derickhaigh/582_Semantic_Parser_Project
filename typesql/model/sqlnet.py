@@ -4,10 +4,10 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from modules.word_embedding import WordEmbedding
-from modules.aggregator_predict import AggPredictor
-from modules.sel_condition_predict import SelCondPredictor
-from modules.condtion_op_str_predict import CondOpStrPredictor
+from typesql.model.modules.word_embedding import WordEmbedding
+from typesql.model.modules.aggregator_predict import AggPredictor
+from typesql.model.modules.sel_condition_predict import SelCondPredictor
+from typesql.model.modules.condtion_op_str_predict import CondOpStrPredictor
 
 
 class SQLNet(nn.Module):
@@ -106,8 +106,8 @@ class SQLNet(nn.Module):
         ret_seq = []
         for cur_q, cur_col, cur_query in zip(q, col, query):
             cur_values = []
-            st = cur_query.index(u'WHERE')+1 if \
-                    u'WHERE' in cur_query else len(cur_query)
+            st = cur_query.index('WHERE')+1 if \
+                    'WHERE' in cur_query else len(cur_query)
             all_toks = [['<BEG>']] + cur_q + [['<END>']]
             while st < len(cur_query):
                 ed = len(cur_query) if 'AND' not in cur_query[st:]\
@@ -212,34 +212,33 @@ class SQLNet(nn.Module):
 
         loss = 0
         if pred_agg:
-            agg_truth = map(lambda x:x[0], truth_num)
+            agg_truth = [x[0] for x in truth_num]
             data = torch.from_numpy(np.array(agg_truth))
             if self.gpu:
-                agg_truth_var = Variable(data.cuda())
+                agg_truth_var = Variable(data).type(torch.LongTensor).cuda()
             else:
-                agg_truth_var = Variable(data)
+                agg_truth_var = Variable(data).type(torch.LongTensor)
 
             loss += self.CE(agg_score, agg_truth_var)
 
         if pred_sel:
-            sel_truth = map(lambda x:x[1], truth_num)
+            sel_truth = [x[1] for x in truth_num]
             data = torch.from_numpy(np.array(sel_truth))
             if self.gpu:
-                sel_truth_var = Variable(data.cuda())
+                sel_truth_var = Variable(data.cuda()).type(torch.LongTensor).cuda()
             else:
-                sel_truth_var = Variable(data)
-
+                sel_truth_var = Variable(data).type(torch.LongTensor)
             loss += self.CE(sel_score, sel_truth_var)
 
         if pred_cond:
             B = len(truth_num)
             #Evaluate the number of conditions
-            cond_num_truth = map(lambda x:x[2], truth_num)
+            cond_num_truth = [x[2] for x in truth_num]
             data = torch.from_numpy(np.array(cond_num_truth))
             if self.gpu:
-                cond_num_truth_var = Variable(data.cuda())
+                cond_num_truth_var = Variable(data).type(torch.LongTensor).cuda()
             else:
-                cond_num_truth_var = Variable(data)
+                cond_num_truth_var = Variable(data).type(torch.LongTensor)          
             loss += self.CE(cond_num_score, cond_num_truth_var)
 
             #Evaluate the columns of conditions
@@ -250,9 +249,9 @@ class SQLNet(nn.Module):
                     truth_prob[b][list(truth_num[b][3])] = 1
             data = torch.from_numpy(truth_prob)
             if self.gpu:
-                cond_col_truth_var = Variable(data.cuda())
+                cond_col_truth_var = Variable(data).type(torch.LongTensor).cuda()
             else:
-                cond_col_truth_var = Variable(data)
+                cond_col_truth_var = Variable(data).type(torch.LongTensor)
 
             sigm = nn.Sigmoid()
             cond_col_prob = sigm(cond_col_score)
@@ -267,9 +266,9 @@ class SQLNet(nn.Module):
                     continue
                 data = torch.from_numpy(np.array(truth_num[b][4]))
                 if self.gpu:
-                    cond_op_truth_var = Variable(data.cuda())
+                    cond_op_truth_var = Variable(data).type(torch.LongTensor).cuda()
                 else:
-                    cond_op_truth_var = Variable(data)
+                    cond_op_truth_var = Variable(data).type(torch.LongTensor)
                 cond_op_pred = cond_op_score[b, :len(truth_num[b][4])]
                 loss += (self.CE(cond_op_pred, cond_op_truth_var) \
                         / len(truth_num))
@@ -282,9 +281,9 @@ class SQLNet(nn.Module):
                         continue
                     data = torch.from_numpy(np.array(cond_str_truth[1:]))
                     if self.gpu:
-                        cond_str_truth_var = Variable(data.cuda())
+                        cond_str_truth_var = Variable(data).type(torch.LongTensor).cuda()
                     else:
-                        cond_str_truth_var = Variable(data)
+                        cond_str_truth_var = Variable(data).type(torch.LongTensor)
                     str_end = len(cond_str_truth)-1
                     cond_str_pred = cond_str_score[b, idx, :str_end]
                     loss += (self.CE(cond_str_pred, cond_str_truth_var) \
@@ -369,10 +368,6 @@ class SQLNet(nn.Module):
                             str(cond_pred[idx][2]).lower():
                         flag = False
                         cond_val_err += 1
-                    #if flag and unicode(cond_gt[gt_idx][2]).lower() != \
-                    #        unicode(cond_pred[idx][2]).lower():
-                    #    flag = False
-                    #    cond_val_err += 1
 
                 if not flag:
                     cond_err += 1
@@ -401,7 +396,7 @@ class SQLNet(nn.Module):
                     '-RSB-':']',
                     '``':'"',
                     '\'\'':'"',
-                    '--':u'\u2013'}
+                    '--':'\u2013'}
             ret = ''
             double_quote_appear = 0
             tok_list = [x for gx in tok_list for x in gx]
@@ -423,7 +418,7 @@ class SQLNet(nn.Module):
                         ret = ret + ' '
                 elif tok[0] not in alphabet:
                     pass
-                elif (ret[-1] not in ['(', '/', u'\u2013', '#', '$', '&']) \
+                elif (ret[-1] not in ['(', '/', '\u2013', '#', '$', '&']) \
                         and (ret[-1] != '"' or not double_quote_appear):
                     ret = ret + ' '
                 ret = ret + tok

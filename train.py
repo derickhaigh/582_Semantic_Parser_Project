@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 from typesql.utils import *
 from typesql.model.sqlnet import SQLNet
+# Keaton
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -86,7 +87,7 @@ if __name__ == '__main__':
     for i in range(10):
         #print 'Epoch %d @ %s'%(i+1, datetime.datetime.now())
         print(f'Epoch {i+1} @ {datetime.datetime.now()}')
-        print(f' Loss = {epoch_train(i, model, optimizer, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY, args.db_content)}')
+        print(f' Loss = {epoch_train(model, optimizer, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY, args.db_content)}')
         train_acc, train_entry_acc = epoch_acc(model, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY, args.db_content)
         print(f' Train acc_qm: {train_acc}\n breakdown result: {train_entry_acc}')
         val_acc = epoch_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY, args.db_content, False) #for detailed error analysis, pass True to the end
