@@ -27,6 +27,18 @@ def run_lstm(lstm, inp, inp_len, hidden=None):
     ret_h = (sort_ret_h[0][:, sort_perm_inv], sort_ret_h[1][:, sort_perm_inv])
     return ret_s, ret_h
 
+def run_attention(encoder, inp, inp_len):
+    sort_perm = np.array(sorted(range(len(inp_len)),
+    key = lambda k:inp_len[k], reverse=True))
+    sort_inp_len = inp_len[sort_perm]
+    sort_perm_inv = np.argsort(sort_perm)
+    if inp.is_cuda:
+        sort_perm = torch.LongTensor(sort_perm).cuda()
+        sort_perm_inv = torch.LongTensor(sort_perm_inv).cuda()
+    attn = encoder(sort_perm)
+    return attn
+
+
 
 def col_name_encode(name_inp_var, name_len, col_len, enc_lstm):
     #Encode the columns.

@@ -1,5 +1,6 @@
 import json
 import torch
+from torch.utils.tensorboard import SummaryWriter
 import datetime
 import argparse
 import numpy as np
@@ -19,15 +20,18 @@ if __name__ == '__main__':
             help='0: use knowledge graph type, 1: use db content to get type info')
     parser.add_argument('--train_emb', action='store_true',
             help='Train word embedding.')
+    parser.add_argument('--log_dir', type=str, default='./logs', help="log directory")
+    parser.add_argument('--epochs', type=int, default=10)
 
     args = parser.parse_args()
 
     N_word=600
     B_word=42
     if args.toy:
+        print('toy')
         USE_SMALL=True
         GPU=True
-        BATCH_SIZE=15
+        BATCH_SIZE=5
     else:
         USE_SMALL=False
         GPU=True
@@ -84,14 +88,20 @@ if __name__ == '__main__':
         torch.save(model.op_str_pred.state_dict(), cond_m)
         torch.save(model.cond_type_embed_layer.state_dict(), cond_e)
 
-    for i in range(10):
+
+    writer = SummaryWriter(log_dir=args.log_dir)
+    for i in range(args.epochs):
         #print 'Epoch %d @ %s'%(i+1, datetime.datetime.now())
         print(f'Epoch {i+1} @ {datetime.datetime.now()}')
-        print(f' Loss = {epoch_train(model, optimizer, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY, args.db_content)}')
+        loss = epoch_train(model, optimizer, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY, args.db_content)
+        print(f' Loss = {loss}')
         train_acc, train_entry_acc = epoch_acc(model, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY, args.db_content)
         print(f' Train acc_qm: {train_acc}\n breakdown result: {train_entry_acc}')
         val_acc = epoch_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY, args.db_content, False) #for detailed error analysis, pass True to the end
         print(f' Dev acc_qm: {val_acc}\n breakdown result: {val_acc[1]}')
+        writer.add_scalar('loss', loss, i)
+        writer.add_scalar('train_acc_qm', train_acc, i)
+        writer.add_scalar('val_acc_qm', val_acc[0], i)
         if TRAIN_AGG:
             if val_acc[1][0] > best_agg_acc:
                 best_agg_acc = val_acc[1][0]
@@ -132,3 +142,4 @@ if __name__ == '__main__':
         #print ' Best val acc = %s, on epoch %s individually'%(
         #        (best_agg_acc, best_sel_acc, best_cond_acc),
         #        (best_agg_idx, best_sel_idx, best_cond_idx))
+    writer.close()
